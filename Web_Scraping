@@ -1,0 +1,364 @@
+# In this part, I scraped all the data from the website.
+
+# 1981-2014 daily data for New Haven, CT
+alldata <- matrix(ncol = 21)
+for (k in 1981:2014) {
+  for (j in 1:12) {
+    url = paste("http://www.wunderground.com/history/airport/KHVN/",
+                k, "/", j, 
+                "/1/MonthlyHistory.html?req_city=New%20Haven&req_state=CT&req_statename=Connecticut&reqdb.zip=06511&reqdb.magic=1&reqdb.wmo=99999", sep = "")
+    x <- scan(url, what = "", sep = "\n")
+    tmp <- grep("DailyHistory", x)
+    data <- c()
+    for (i in 5:length(tmp)) {
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] == "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], x[tmp[i]+63], sep = ",")
+        index <- seq(tmp[i]+2, tmp[i]+56, 3)
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] != "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], sep = ",")
+        index <- c(seq(tmp[i]+2, tmp[i]+56, 3))
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] != "\t," & x[tmp[i]+62] != "\t,") {
+        index <- seq(tmp[i]+2, tmp[i]+59, 3)
+        y <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+      }
+      mark <- paste(k, "/", j, "/", gsub("<[^<>]*>|\t", "", x[tmp[i]]), sep = "")
+      y <- c(mark, y)
+      data <- c(data, y)
+    }
+    alldata <- rbind(alldata, matrix(data, ncol = 21, byrow = T))
+  }
+}
+alldata <- alldata[-1,]
+alldata <- as.data.frame(alldata)
+colnames(alldata) <- c("date", "high_temp", "avg_tmp", "low_tmp", 
+                       "high_dew", "avg_dew", "low_dew", 
+                       "high_hum", "avg_hum", "low_hum", 
+                       "high_sea", "avg_sea", "low_sea", 
+                       "high_vis", "avg_vis", "low_vis", 
+                       "low_wind", "avg_wind", "high_wind", 
+                       "sum_pre", "events")
+write.table(alldata, file = "NHCT19812014", sep = " ")
+
+# 2015 daily data for New Haven, CT
+alldata <- matrix(ncol = 21)
+for (k in 2015) {
+  for (j in 1:10) {
+    url = paste("http://www.wunderground.com/history/airport/KHVN/",
+                k, "/", j, 
+                "/1/MonthlyHistory.html?req_city=New%20Haven&req_state=CT&req_statename=Connecticut&reqdb.zip=06511&reqdb.magic=1&reqdb.wmo=99999", sep = "")
+    x <- scan(url, what = "", sep = "\n")
+    tmp <- grep("DailyHistory", x)
+    data <- c()
+    for (i in 5:length(tmp)) {
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] == "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], x[tmp[i]+63], sep = ",")
+        index <- seq(tmp[i]+2, tmp[i]+56, 3)
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] != "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], sep = ",")
+        index <- c(seq(tmp[i]+2, tmp[i]+56, 3))
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] != "\t," & x[tmp[i]+62] != "\t,") {
+        index <- seq(tmp[i]+2, tmp[i]+59, 3)
+        y <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+      }
+      mark <- paste(k, "/", j, "/", gsub("<[^<>]*>|\t", "", x[tmp[i]]), sep = "")
+      y <- c(mark, y)
+      data <- c(data, y)
+    }
+    alldata <- rbind(alldata, matrix(data, ncol = 21, byrow = T))
+  }
+}
+alldata <- alldata[-1,]
+alldata <- as.data.frame(alldata)
+colnames(alldata) <- c("date", "high_temp", "avg_tmp", "low_tmp", 
+                       "high_dew", "avg_dew", "low_dew", 
+                       "high_hum", "avg_hum", "low_hum", 
+                       "high_sea", "avg_sea", "low_sea", 
+                       "high_vis", "avg_vis", "low_vis", 
+                       "low_wind", "avg_wind", "high_wind", 
+                       "sum_pre", "events")
+write.table(alldata, file = "NHCT2015", sep = " ")
+
+# 1981-2014 daily data for Harrisburg, Pennsylvania.
+alldata <- matrix(ncol = 21)
+for (k in 1981:2014) {
+  for (j in 1:12) {
+    url = paste("http://www.wunderground.com/history/airport/KMDT/",
+                k, "/", j, 
+                "/1/MonthlyHistory.html?req_city=Harrisburg&req_statename=Pennsylvania&reqdb.zip=&reqdb.magic=&reqdb.wmo=", sep = "")
+    x <- scan(url, what = "", sep = "\n")
+    tmp <- grep("DailyHistory", x)
+    data <- c()
+    for (i in 5:length(tmp)) {
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] == "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], x[tmp[i]+63], sep = ",")
+        index <- seq(tmp[i]+2, tmp[i]+56, 3)
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] != "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], sep = ",")
+        index <- c(seq(tmp[i]+2, tmp[i]+56, 3))
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] != "\t," & x[tmp[i]+62] != "\t,") {
+        index <- seq(tmp[i]+2, tmp[i]+59, 3)
+        y <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+      }
+      mark <- paste(k, "/", j, "/", gsub("<[^<>]*>|\t", "", x[tmp[i]]), sep = "")
+      y <- c(mark, y)
+      data <- c(data, y)
+    }
+    alldata <- rbind(alldata, matrix(data, ncol = 21, byrow = T))
+  }
+}
+alldata <- alldata[-1,]
+alldata <- as.data.frame(alldata)
+colnames(alldata) <- c("date", "high_temp", "avg_tmp", "low_tmp", 
+                       "high_dew", "avg_dew", "low_dew", 
+                       "high_hum", "avg_hum", "low_hum", 
+                       "high_sea", "avg_sea", "low_sea", 
+                       "high_vis", "avg_vis", "low_vis", 
+                       "low_wind", "avg_wind", "high_wind", 
+                       "sum_pre", "events")
+write.table(alldata, file = "Harrisburg19812014", sep = " ")
+
+# 2015 daily data for Harrisburg, Pennsylvania.
+alldata <- matrix(ncol = 21)
+for (k in 2015) {
+  for (j in 1:10) {
+    url = paste("http://www.wunderground.com/history/airport/KMDT/",
+                k, "/", j, 
+                "/1/MonthlyHistory.html?req_city=Harrisburg&req_statename=Pennsylvania&reqdb.zip=&reqdb.magic=&reqdb.wmo=", sep = "")
+    x <- scan(url, what = "", sep = "\n")
+    tmp <- grep("DailyHistory", x)
+    data <- c()
+    for (i in 5:length(tmp)) {
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] == "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], x[tmp[i]+63], sep = ",")
+        index <- seq(tmp[i]+2, tmp[i]+56, 3)
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] != "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], sep = ",")
+        index <- c(seq(tmp[i]+2, tmp[i]+56, 3))
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] != "\t," & x[tmp[i]+62] != "\t,") {
+        index <- seq(tmp[i]+2, tmp[i]+59, 3)
+        y <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+      }
+      mark <- paste(k, "/", j, "/", gsub("<[^<>]*>|\t", "", x[tmp[i]]), sep = "")
+      y <- c(mark, y)
+      data <- c(data, y)
+    }
+    alldata <- rbind(alldata, matrix(data, ncol = 21, byrow = T))
+  }
+}
+alldata <- alldata[-1,]
+alldata <- as.data.frame(alldata)
+colnames(alldata) <- c("date", "high_temp", "avg_tmp", "low_tmp", 
+                       "high_dew", "avg_dew", "low_dew", 
+                       "high_hum", "avg_hum", "low_hum", 
+                       "high_sea", "avg_sea", "low_sea", 
+                       "high_vis", "avg_vis", "low_vis", 
+                       "low_wind", "avg_wind", "high_wind", 
+                       "sum_pre", "events")
+write.table(alldata, file = "Harrisburg2015", sep = " ")
+
+# 1981-2014 daily data for Pittsburgh, Pennsylvania.
+alldata <- matrix(ncol = 21)
+for (k in 1981:2014) {
+  for (j in 1:12) {
+    url = paste("http://www.wunderground.com/history/airport/KAGC/",
+                k, "/", j, 
+                "/1/MonthlyHistory.html?req_city=Pittsburgh&req_statename=Pennsylvania&reqdb.zip=&reqdb.magic=&reqdb.wmo=", sep = "")
+    x <- scan(url, what = "", sep = "\n")
+    tmp <- grep("DailyHistory", x)
+    data <- c()
+    for (i in 5:length(tmp)) {
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] == "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], x[tmp[i]+63], sep = ",")
+        index <- seq(tmp[i]+2, tmp[i]+56, 3)
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] != "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], sep = ",")
+        index <- c(seq(tmp[i]+2, tmp[i]+56, 3))
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] != "\t," & x[tmp[i]+62] != "\t,") {
+        index <- seq(tmp[i]+2, tmp[i]+59, 3)
+        y <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+      }
+      mark <- paste(k, "/", j, "/", gsub("<[^<>]*>|\t", "", x[tmp[i]]), sep = "")
+      y <- c(mark, y)
+      data <- c(data, y)
+    }
+    alldata <- rbind(alldata, matrix(data, ncol = 21, byrow = T))
+  }
+}
+alldata <- alldata[-1,]
+alldata <- as.data.frame(alldata)
+colnames(alldata) <- c("date", "high_temp", "avg_tmp", "low_tmp", 
+                       "high_dew", "avg_dew", "low_dew", 
+                       "high_hum", "avg_hum", "low_hum", 
+                       "high_sea", "avg_sea", "low_sea", 
+                       "high_vis", "avg_vis", "low_vis", 
+                       "low_wind", "avg_wind", "high_wind", 
+                       "sum_pre", "events")
+write.table(alldata, file = "Pittsburgh19812014", sep = " ")
+
+# 2015 daily data for Pittsburgh, Pennsylvania.
+alldata <- matrix(ncol = 21)
+for (k in 2015) {
+  for (j in 1:10) {
+    url = paste("http://www.wunderground.com/history/airport/KAGC/",
+                k, "/", j, 
+                "/1/MonthlyHistory.html?req_city=Pittsburgh&req_statename=Pennsylvania&reqdb.zip=&reqdb.magic=&reqdb.wmo=", sep = "")
+    x <- scan(url, what = "", sep = "\n")
+    tmp <- grep("DailyHistory", x)
+    data <- c()
+    for (i in 5:length(tmp)) {
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] == "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], x[tmp[i]+63], sep = ",")
+        index <- seq(tmp[i]+2, tmp[i]+56, 3)
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] != "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], sep = ",")
+        index <- c(seq(tmp[i]+2, tmp[i]+56, 3))
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] != "\t," & x[tmp[i]+62] != "\t,") {
+        index <- seq(tmp[i]+2, tmp[i]+59, 3)
+        y <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+      }
+      mark <- paste(k, "/", j, "/", gsub("<[^<>]*>|\t", "", x[tmp[i]]), sep = "")
+      y <- c(mark, y)
+      data <- c(data, y)
+    }
+    alldata <- rbind(alldata, matrix(data, ncol = 21, byrow = T))
+  }
+}
+alldata <- alldata[-1,]
+alldata <- as.data.frame(alldata)
+colnames(alldata) <- c("date", "high_temp", "avg_tmp", "low_tmp", 
+                       "high_dew", "avg_dew", "low_dew", 
+                       "high_hum", "avg_hum", "low_hum", 
+                       "high_sea", "avg_sea", "low_sea", 
+                       "high_vis", "avg_vis", "low_vis", 
+                       "low_wind", "avg_wind", "high_wind", 
+                       "sum_pre", "events")
+write.table(alldata, file = "Pittsburgh2015", sep = " ")
+
+
+# 1981-2014 daily data for Philadelphia, Pennsylvania.
+alldata <- matrix(ncol = 21)
+for (k in 1981:2014) {
+  for (j in 1:12) {
+    url = paste("http://www.wunderground.com/history/airport/KPNE/",
+                k, "/", j, 
+                "/1/MonthlyHistory.html?req_city=Philadelphia&req_statename=Pennsylvania&reqdb.zip=&reqdb.magic=&reqdb.wmo=", sep = "")
+    x <- scan(url, what = "", sep = "\n")
+    tmp <- grep("DailyHistory", x)
+    data <- c()
+    for (i in 5:length(tmp)) {
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] == "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], x[tmp[i]+63], sep = ",")
+        index <- seq(tmp[i]+2, tmp[i]+56, 3)
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] != "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], sep = ",")
+        index <- c(seq(tmp[i]+2, tmp[i]+56, 3))
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] != "\t," & x[tmp[i]+62] != "\t,") {
+        index <- seq(tmp[i]+2, tmp[i]+59, 3)
+        y <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+      }
+      mark <- paste(k, "/", j, "/", gsub("<[^<>]*>|\t", "", x[tmp[i]]), sep = "")
+      y <- c(mark, y)
+      data <- c(data, y)
+    }
+    alldata <- rbind(alldata, matrix(data, ncol = 21, byrow = T))
+  }
+}
+alldata <- alldata[-1,]
+alldata <- as.data.frame(alldata)
+colnames(alldata) <- c("date", "high_temp", "avg_tmp", "low_tmp", 
+                       "high_dew", "avg_dew", "low_dew", 
+                       "high_hum", "avg_hum", "low_hum", 
+                       "high_sea", "avg_sea", "low_sea", 
+                       "high_vis", "avg_vis", "low_vis", 
+                       "low_wind", "avg_wind", "high_wind", 
+                       "sum_pre", "events")
+write.table(alldata, file = "Philadelphia19812014", sep = " ")
+
+# 2015 daily data for Philadelphia, Pennsylvania.
+alldata <- matrix(ncol = 21)
+for (k in 2015) {
+  for (j in 1:10) {
+    url = paste("http://www.wunderground.com/history/airport/KPNE/",
+                k, "/", j, 
+                "/1/MonthlyHistory.html?req_city=Philadelphia&req_statename=Pennsylvania&reqdb.zip=&reqdb.magic=&reqdb.wmo=", sep = "")
+    x <- scan(url, what = "", sep = "\n")
+    tmp <- grep("DailyHistory", x)
+    data <- c()
+    for (i in 5:length(tmp)) {
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] == "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], x[tmp[i]+63], sep = ",")
+        index <- seq(tmp[i]+2, tmp[i]+56, 3)
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] == "\t," & x[tmp[i]+62] != "\t,") {
+        last <- paste(x[tmp[i]+59], x[tmp[i]+61], sep = ",")
+        index <- c(seq(tmp[i]+2, tmp[i]+56, 3))
+        y1 <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+        y <- c(y1, last)
+      }
+      if (x[tmp[i]+60] != "\t," & x[tmp[i]+62] != "\t,") {
+        index <- seq(tmp[i]+2, tmp[i]+59, 3)
+        y <- gsub("<[^<>]*>| |\t&nbsp;|-","", x[index])
+      }
+      mark <- paste(k, "/", j, "/", gsub("<[^<>]*>|\t", "", x[tmp[i]]), sep = "")
+      y <- c(mark, y)
+      data <- c(data, y)
+    }
+    alldata <- rbind(alldata, matrix(data, ncol = 21, byrow = T))
+  }
+}
+alldata <- alldata[-1,]
+alldata <- as.data.frame(alldata)
+colnames(alldata) <- c("date", "high_temp", "avg_tmp", "low_tmp", 
+                       "high_dew", "avg_dew", "low_dew", 
+                       "high_hum", "avg_hum", "low_hum", 
+                       "high_sea", "avg_sea", "low_sea", 
+                       "high_vis", "avg_vis", "low_vis", 
+                       "low_wind", "avg_wind", "high_wind", 
+                       "sum_pre", "events")
+write.table(alldata, file = "Philadelphia2015", sep = " ")
+
+
