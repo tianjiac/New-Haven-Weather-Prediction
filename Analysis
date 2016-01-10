@@ -1,0 +1,982 @@
+# Modelling and analysis part.
+
+# get PA data.
+x1 <- read.csv("Harrisburg19812014", sep = " ", stringsAsFactors = FALSE)
+x2 <- read.csv("Harrisburg2015", sep = " ", stringsAsFactors = FALSE)
+xh <- rbind(x1, x2)
+x1 <- read.csv("Pittsburgh19812014", sep = " ", stringsAsFactors = FALSE)
+x2 <- read.csv("Pittsburgh2015", sep = " ", stringsAsFactors = FALSE)
+xp <- rbind(x1, x2)
+x1 <- read.csv("Philadelphia19812014", sep = " ", stringsAsFactors = FALSE)
+x2 <- read.csv("Philadelphia2015", sep = " ", stringsAsFactors = FALSE)
+xph <- rbind(x1, x2)
+
+# get NH data.
+x1 <- read.csv("NHCT19812014", sep = " ", stringsAsFactors = FALSE)
+x2 <- read.csv("NHCT2015", sep = " ", stringsAsFactors = FALSE)
+xnh <- rbind(x1, x2)
+
+# First, select observations in xh, xp, xph and xnh when "null event" in xnh not 
+# resulting from lack of all data.
+
+xh <- xh[complete.cases(xnh[,c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_vis", "avg_wind")]),]
+xp <- xp[complete.cases(xnh[,c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_vis", "avg_wind")]),]
+xph <- xph[complete.cases(xnh[,c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_vis", "avg_wind")]),]
+xnh <- xnh[complete.cases(xnh[,c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_vis", "avg_wind")]),]
+
+# Select observations without any missing data in variables.
+indexh <- complete.cases(xh[,c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_vis", "avg_wind")])
+indexp <- complete.cases(xp[,c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_vis", "avg_wind")])
+indexph <- complete.cases(xph[,c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_vis", "avg_wind")])
+index <- indexh&indexp&indexph
+
+xh <- xh[index,]
+xp <- xp[index,]
+xph <- xph[index,]
+xnh <- xnh[index,]
+
+
+xh$events[xh$events == ""] <- "good"
+xnh$events[xnh$events == ""] <- "good"
+xp$events[xp$events == ""] <- "good"
+xph$events[xph$events == ""] <- "good"
+
+
+# We want to use the weather of PA to predict NH. 
+
+# 1. How similar their weathers are?
+round(prop.table(table(xh$events)),2)
+round(prop.table(table(xnh$events)),2)
+round(prop.table(table(xph$events)),2)
+round(prop.table(table(xp$events)),2)
+# Looking at the frequency table, we can find that their weathers were quite similar.
+
+
+# 2. What about the performance of weather indicators?
+
+xh1 <- xh[2:(ncol(xh)-2)]
+xp1 <- xp[2:(ncol(xp)-2)]
+xph1 <- xph[2:(ncol(xph)-2)]
+xnh1 <- xnh[2:(ncol(xnh)-2)]
+x <- (xh1 + xp1 + xph1) /3
+
+par(mfrow = c(2, 3))
+plot(x$avg_tmp[1:(nrow(x)-1)], xnh$avg_tmp[2:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Temperature (F)")
+cor(x$avg_tmp[1:(nrow(x)-1)], xnh$avg_tmp[2:nrow(x)])
+plot(x$avg_dew[1:(nrow(x)-1)], xnh$avg_dew[2:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Dew Point (F)")
+cor(x$avg_dew[1:(nrow(x)-1)], xnh$avg_dew[2:nrow(x)])
+plot(x$avg_hum[1:(nrow(x)-1)], xnh$avg_hum[2:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Humidity (%)")
+cor(x$avg_hum[1:(nrow(x)-1)], xnh$avg_hum[2:nrow(x)])
+plot(x$avg_sea[1:(nrow(x)-1)], xnh$avg_sea[2:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Sea Level Press (in)")
+cor(x$avg_sea[1:(nrow(x)-1)], xnh$avg_sea[2:nrow(x)])
+plot(x$avg_vis[1:(nrow(x)-1)], xnh$avg_vis[2:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Visibility (mi)")
+cor(x$avg_vis[1:(nrow(x)-1)], xnh$avg_vis[2:nrow(x)])
+plot(x$avg_wind[1:(nrow(x)-1)], xnh$avg_wind[2:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Wind (mph)")
+cor(x$avg_wind[1:(nrow(x)-1)], xnh$avg_wind[2:nrow(x)])
+
+
+plot(x$avg_tmp[1:(nrow(x)-2)], xnh$avg_tmp[3:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Temperature (F)")
+cor(x$avg_tmp[1:(nrow(x)-2)], xnh$avg_tmp[3:nrow(x)])
+plot(x$avg_dew[1:(nrow(x)-2)], xnh$avg_dew[3:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Dew Point (F)")
+cor(x$avg_dew[1:(nrow(x)-2)], xnh$avg_dew[3:nrow(x)])
+plot(x$avg_hum[1:(nrow(x)-2)], xnh$avg_hum[3:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Humidity (%)")
+cor(x$avg_hum[1:(nrow(x)-2)], xnh$avg_hum[3:nrow(x)])
+plot(x$avg_sea[1:(nrow(x)-2)], xnh$avg_sea[3:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Sea Level Press (in)")
+cor(x$avg_sea[1:(nrow(x)-2)], xnh$avg_sea[3:nrow(x)])
+plot(x$avg_vis[1:(nrow(x)-2)], xnh$avg_vis[3:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Visibility (mi)")
+cor(x$avg_vis[1:(nrow(x)-2)], xnh$avg_vis[3:nrow(x)])
+plot(x$avg_wind[1:(nrow(x)-2)], xnh$avg_wind[3:nrow(x)], xlab = "PA", ylab = "New Haven", 
+     main = "Average Wind (mph)")
+cor(x$avg_wind[1:(nrow(x)-2)], xnh$avg_wind[3:nrow(x)])
+par(mfrow = c(1, 1))
+
+# Select time lag as 1 day. Variables are: avg_tmp, avg_dew, avg_sea
+
+# Construct a model to predict the weather. A lot of types....
+# predict the occurance of each type of weather seperately.
+
+# logistic model for "Rain".
+########################## naive method ##################
+index <- which(xnh$date == "2015/1/1")  # 9778
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+
+ytrain <- as.numeric(grepl("Rain", xnhtrain$events))
+ytest <- as.numeric(grepl("Rain", xnhtest$events))
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_rain <- as.numeric(pred >= 0.5)
+sum(ypred_rain == ytest)/length(ytest) # 0.7335526
+(TP <- sum(ytest == 1 & ypred_rain == 1)) # 1
+(TN <- sum(ytest == 0 & ypred_rain == 0)) # 222
+(FP <- sum(ytest == 1 & ypred_rain == 0)) # 81
+(FN <- sum(ytest == 0 & ypred_rain == 1)) # 0
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.7335526
+(sen <- TP/(TP+FN)) # 1
+(spec <- TN/(TN+FP)) # 0.7326733
+(pre <- TP/(TP+FP)) # 0.01219512
+
+########################## Oversampling ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Rain", xnhtrain$events))
+ytest <- as.numeric(grepl("Rain", xnhtest$events))
+
+number <- which(ytrain == 1)
+set.seed(1)
+index <- sample(number, 6859, replace = TRUE)
+index <- c(index, which(ytrain == 0))
+xtrain <- xtrain[index,]
+ytrain <- ytrain[index]
+
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_rain <- as.numeric(pred >= 0.5)
+
+(TP <- sum(ytest == 1 & ypred_rain == 1)) # 51
+(TN <- sum(ytest == 0 & ypred_rain == 0)) # 153
+(FP <- sum(ytest == 1 & ypred_rain == 0)) # 31
+(FN <- sum(ytest == 0 & ypred_rain == 1)) # 69
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.6710526
+(sen <- TP/(TP+FN)) # 0.425
+(spec <- TN/(TN+FP)) # 0.8315217
+(pre <- TP/(TP+FP)) # 0.6219512
+
+
+########################## Undersampling ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Rain", xnhtrain$events))
+ytest <- as.numeric(grepl("Rain", xnhtest$events))
+
+number <- which(ytrain == 0)
+set.seed(1)
+index <- sample(number, 2917, replace = TRUE)
+index <- c(index, which(ytrain == 1))
+xtrain <- xtrain[index,]
+ytrain <- ytrain[index]
+
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_rain <- as.numeric(pred >= 0.5)
+
+(TP <- sum(ytest == 1 & ypred_rain == 1)) # 51
+(TN <- sum(ytest == 0 & ypred_rain == 0)) # 155
+(FP <- sum(ytest == 1 & ypred_rain == 0)) # 31
+(FN <- sum(ytest == 0 & ypred_rain == 1)) # 67
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.6776316
+(sen <- TP/(TP+FN)) # 0.4322034
+(spec <- TN/(TN+FP)) # 0.8333333
+(pre <- TP/(TP+FP)) # 0.6219512
+
+
+########################## Bagging ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Rain", xnhtrain$events))
+ytest <- as.numeric(grepl("Rain", xnhtest$events))
+
+T <- 10
+N <- 6000
+ypred <- c()
+for (i in 1:T) {
+  index <- sample(1:length(ytrain), N, replace = TRUE)
+  xtrain <- xtrain[index,]
+  ytrain <- ytrain[index]
+  lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+             data = xtrain, family=binomial(link="probit"))
+  pred <- predict(lm1, xtest, type = "response")
+  ypred_rain <- as.numeric(pred >= 0.5)
+  ypred <- c(ypred, ypred_rain)
+}
+ypred <- matrix(ypred, nrow = 10, byrow = T)
+
+select <- function(x) {
+  num1 <- sum(x == 0)
+  num2 <- sum(x == 1)
+  if (num1 >= num2) return(0)
+  else return(1)
+}
+
+ypred_rain <- apply(ypred, 2, select)
+
+(TP <- sum(ytest == 1 & ypred_rain == 1)) # 1
+(TN <- sum(ytest == 0 & ypred_rain == 0)) # 222
+(FP <- sum(ytest == 1 & ypred_rain == 0)) # 81
+(FN <- sum(ytest == 0 & ypred_rain == 1)) # 0
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.7335526
+(sen <- TP/(TP+FN)) # 1
+(spec <- TN/(TN+FP)) # 0.7326733
+(pre <- TP/(TP+FP)) # 0.01219512
+
+
+########################## Adaptive Boosting ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+ytrain <- as.numeric(grepl("Rain", xnhtrain$events))
+ytrain <- ytrain[complete.cases(xtrain)]
+
+xtrain <- xtrain[complete.cases(xtrain),]
+
+xnhtest <- xnh[index:nrow(xnh),]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+ytest <- as.numeric(grepl("Rain", xnhtest$events))
+
+T <- 50
+N <- 6000
+w <- rep(1, length(ytrain))/length(ytrain)
+ypred <- c()
+sum_error <- 0
+for (i in 1:T) {
+  if (sum_error > 0.5) break
+  index <- sample(1:length(ytrain), N, replace = TRUE, prob = w)
+  xtrain1 <- xtrain[index,]
+  ytrain1 <- ytrain[index]
+  lm1 <- glm(ytrain1 ~ avg_tmp+ avg_dew + avg_sea, 
+             data = xtrain1, family=binomial(link="probit"))
+  pred <- predict(lm1, xtrain, type = "response")
+  ypred_rain <- as.numeric(pred >= 0.5)
+  error <- 1-as.numeric(ypred_rain == ytrain)
+  sum_error <- sum(error * w)
+  confidence_index <- log((1-sum_error)/sum_error)/2
+  w <- w * exp(confidence_index * error)
+  w <- w / sum(w)
+  
+  # predictiin for i
+  pred <- predict(lm1, xtest, type = "response")
+  ypred_rain <- as.numeric(pred >= 0.5)
+  ypred <- c(ypred, ypred_rain)
+  
+}
+
+ypred <- matrix(ypred, nrow = i-1, byrow = T)
+
+ypred_rain <- apply(ypred, 2, select)
+
+(TP <- sum(ytest == 1 & ypred_rain == 1)) # 16
+(TN <- sum(ytest == 0 & ypred_rain == 0)) # 217
+(FP <- sum(ytest == 1 & ypred_rain == 0)) # 66
+(FN <- sum(ytest == 0 & ypred_rain == 1)) # 5
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.7664474
+(sen <- TP/(TP+FN)) # 0.7619048
+(spec <- TN/(TN+FP)) # 0.7667845
+(pre <- TP/(TP+FP)) # 0.195122
+
+
+
+# logistic model for "Fog".
+########################## naive method ##################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+
+ytrain <- as.numeric(grepl("Fog", xnhtrain$events))
+ytest <- as.numeric(grepl("Fog", xnhtest$events))
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_fog <- as.numeric(pred >= 0.5)
+sum(ypred_fog == ytest)/length(ytest) # 0.9013158
+(TP <- sum(ytest == 1 & ypred_fog == 1)) # 0
+(TN <- sum(ytest == 0 & ypred_fog == 0)) # 274
+(FP <- sum(ytest == 1 & ypred_fog == 0)) # 30
+(FN <- sum(ytest == 0 & ypred_fog == 1)) # 0
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.9013158
+(sen <- TP/(TP+FN)) # NAN
+(spec <- TN/(TN+FP)) # 0.9013
+(pre <- TP/(TP+FP)) # 0
+
+########################## Oversampling ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Fog", xnhtrain$events))
+ytest <- as.numeric(grepl("Fog", xnhtest$events))
+
+number <- which(ytrain == 1)
+set.seed(1)
+index <- sample(number, 7157, replace = TRUE)
+index <- c(index, which(ytrain == 0))
+xtrain <- xtrain[index,]
+ytrain <- ytrain[index]
+
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_fog <- as.numeric(pred >= 0.5)
+
+(TP <- sum(ytest == 1 & ypred_fog == 1)) # 15
+(TN <- sum(ytest == 0 & ypred_fog == 0)) # 161
+(FP <- sum(ytest == 1 & ypred_fog == 0)) # 15
+(FN <- sum(ytest == 0 & ypred_fog == 1)) # 113
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.5789474
+(sen <- TP/(TP+FN)) # 0.1171875
+(spec <- TN/(TN+FP)) # 0.9147727
+(pre <- TP/(TP+FP)) # 0.3666667
+
+
+########################## Undersampling ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Fog", xnhtrain$events))
+ytest <- as.numeric(grepl("Fog", xnhtest$events))
+
+number <- which(ytrain == 0)
+set.seed(1)
+index <- sample(number, 2619, replace = TRUE)
+index <- c(index, which(ytrain == 1))
+xtrain <- xtrain[index,]
+ytrain <- ytrain[index]
+
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_fog <- as.numeric(pred >= 0.5)
+
+(TP <- sum(ytest == 1 & ypred_fog == 1)) # 15
+(TN <- sum(ytest == 0 & ypred_fog == 0)) # 161
+(FP <- sum(ytest == 1 & ypred_fog == 0)) # 15
+(FN <- sum(ytest == 0 & ypred_fog == 1)) # 113
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.5789474
+(sen <- TP/(TP+FN)) # 0.1171875
+(spec <- TN/(TN+FP)) # 0.9147727
+(pre <- TP/(TP+FP)) # 0.5
+
+
+########################## Bagging ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Fog", xnhtrain$events))
+ytest <- as.numeric(grepl("Fog", xnhtest$events))
+
+T <- 10
+N <- 600
+ypred <- c()
+for (i in 1:T) {
+  index <- sample(1:length(ytrain), N, replace = TRUE)
+  xtrain <- xtrain[index,]
+  ytrain <- ytrain[index]
+  lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+             data = xtrain, family=binomial(link="probit"))
+  pred <- predict(lm1, xtest, type = "response")
+  ypred_fog <- as.numeric(pred >= 0.5)
+  ypred <- c(ypred, ypred_fog)
+}
+ypred <- matrix(ypred, nrow = 10, byrow = T)
+
+select <- function(x) {
+  num1 <- sum(x == 0)
+  num2 <- sum(x == 1)
+  if (num1 >= num2) return(0)
+  else return(1)
+}
+
+ypred_fog <- apply(ypred, 2, select)
+
+(TP <- sum(ytest == 1 & ypred_fog == 1)) # 0
+(TN <- sum(ytest == 0 & ypred_fog == 0)) # 274
+(FP <- sum(ytest == 1 & ypred_fog == 0)) # 30
+(FN <- sum(ytest == 0 & ypred_fog == 1)) # 0
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.9013158
+(sen <- TP/(TP+FN)) # NAN
+(spec <- TN/(TN+FP)) # 0.9013158
+(pre <- TP/(TP+FP)) # 0
+
+
+########################## Adaptive Boosting ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+ytrain <- as.numeric(grepl("Fog", xnhtrain$events))
+ytrain <- ytrain[complete.cases(xtrain)]
+
+xtrain <- xtrain[complete.cases(xtrain),]
+
+xnhtest <- xnh[index:nrow(xnh),]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+ytest <- as.numeric(grepl("Fog", xnhtest$events))
+
+T <- 50
+N <- 6000
+w <- rep(1, length(ytrain))/length(ytrain)
+ypred <- c()
+sum_error <- 0
+for (i in 1:T) {
+  if (sum_error > 0.5) break
+  index <- sample(1:length(ytrain), N, replace = TRUE, prob = w)
+  xtrain1 <- xtrain[index,]
+  ytrain1 <- ytrain[index]
+  lm1 <- glm(ytrain1 ~ avg_tmp+ avg_dew + avg_sea, 
+             data = xtrain1, family=binomial(link="probit"))
+  pred <- predict(lm1, xtrain, type = "response")
+  ypred_fog <- as.numeric(pred >= 0.5)
+  error <- 1-as.numeric(ypred_fog == ytrain)
+  sum_error <- sum(error * w)
+  confidence_index <- log((1-sum_error)/sum_error)/2
+  w <- w * exp(confidence_index * error)
+  w <- w / sum(w)
+  
+  # predictiin for i
+  pred <- predict(lm1, xtest, type = "response")
+  ypred_fog <- as.numeric(pred >= 0.5)
+  ypred <- c(ypred, ypred_fog)
+  print(length(ypred))
+  
+}
+
+ypred <- matrix(ypred, nrow = i-1, byrow = T)
+
+ypred_fog <- apply(ypred, 2, select)
+
+(TP <- sum(ytest == 1 & ypred_fog == 1)) # 3
+(TN <- sum(ytest == 0 & ypred_fog == 0)) # 255
+(FP <- sum(ytest == 1 & ypred_fog == 0)) # 27
+(FN <- sum(ytest == 0 & ypred_fog == 1)) # 19
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.8486842
+(sen <- TP/(TP+FN)) # 0.1363636
+(spec <- TN/(TN+FP)) # 0.9042553
+(pre <- TP/(TP+FP)) # 0.1
+
+
+
+
+
+# logistic model for "Snow".
+########################## naive method ##################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+
+ytrain <- as.numeric(grepl("Snow", xnhtrain$events))
+ytest <- as.numeric(grepl("Snow", xnhtest$events))
+
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_snow <- as.numeric(pred >= 0.5)
+sum(ypred_snow == ytest)/length(ytest) # 0.9013158
+TP <- sum(ytest == 1 & ypred_snow == 1) # 2
+TN <- sum(ytest == 0 & ypred_snow == 0) # 271
+FP <- sum(ytest == 1 & ypred_snow == 0) # 28
+FN <- sum(ytest == 0 & ypred_snow == 1) # 3
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.8980263
+(sen <- TP/(TP+FN)) # 0.4
+(spec <- TN/(TN+FP)) # 0.9036545
+(pre <- TP/(TP+FP)) # 0.06666667
+
+########################## Oversampling ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Snow", xnhtrain$events))
+ytest <- as.numeric(grepl("Snow", xnhtest$events))
+
+number <- which(ytrain == 1)
+set.seed(1)
+index <- sample(number, 9302, replace = TRUE)
+index <- c(index, which(ytrain == 0))
+xtrain <- xtrain[index,]
+ytrain <- ytrain[index]
+
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_snow <- as.numeric(pred >= 0.5)
+
+(TP <- sum(ytest == 1 & ypred_snow == 1)) # 29
+(TN <- sum(ytest == 0 & ypred_snow == 0)) # 229
+(FP <- sum(ytest == 1 & ypred_snow == 0)) # 1
+(FN <- sum(ytest == 0 & ypred_snow == 1)) # 45
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.8486842
+(sen <- TP/(TP+FN)) # 0.3918919
+(spec <- TN/(TN+FP)) # 0.9956522
+(pre <- TP/(TP+FP)) # 0.9666667
+
+
+########################## Undersampling ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Snow", xnhtrain$events))
+ytest <- as.numeric(grepl("Snow", xnhtest$events))
+
+number <- which(ytrain == 0)
+set.seed(1)
+index <- sample(number, 474, replace = TRUE)
+index <- c(index, which(ytrain == 1))
+xtrain <- xtrain[index,]
+ytrain <- ytrain[index]
+
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_snow <- as.numeric(pred >= 0.5)
+
+(TP <- sum(ytest == 1 & ypred_snow == 1)) # 28
+(TN <- sum(ytest == 0 & ypred_snow == 0)) # 230
+(FP <- sum(ytest == 1 & ypred_snow == 0)) # 2
+(FN <- sum(ytest == 0 & ypred_snow == 1)) # 44
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.8486842
+(sen <- TP/(TP+FN)) # 0.3888889
+(spec <- TN/(TN+FP)) # 0.9913793
+(pre <- TP/(TP+FP)) # 0.9333333
+
+
+########################## Bagging ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Snow", xnhtrain$events))
+ytest <- as.numeric(grepl("Snow", xnhtest$events))
+
+T <- 10
+N <- 6000
+ypred <- c()
+for (i in 1:T) {
+  index <- sample(1:length(ytrain), N, replace = TRUE)
+  xtrain <- xtrain[index,]
+  ytrain <- ytrain[index]
+  lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+             data = xtrain, family=binomial(link="probit"))
+  pred <- predict(lm1, xtest, type = "response")
+  ypred_snow <- as.numeric(pred >= 0.5)
+  ypred <- c(ypred, ypred_snow)
+}
+ypred <- matrix(ypred, nrow = 10, byrow = T)
+
+select <- function(x) {
+  num1 <- sum(x == 0)
+  num2 <- sum(x == 1)
+  if (num1 >= num2) return(0)
+  else return(1)
+}
+
+ypred_snow <- apply(ypred, 2, select)
+
+(TP <- sum(ytest == 1 & ypred_snow == 1)) # 2
+(TN <- sum(ytest == 0 & ypred_snow == 0)) # 272
+(FP <- sum(ytest == 1 & ypred_snow == 0)) # 28
+(FN <- sum(ytest == 0 & ypred_snow == 1)) # 2
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.9013158
+(sen <- TP/(TP+FN)) # 0.5
+(spec <- TN/(TN+FP)) # 0.9066667
+(pre <- TP/(TP+FP)) # 0.06666667
+
+
+########################## Adaptive Boosting ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+ytrain <- as.numeric(grepl("Snow", xnhtrain$events))
+ytrain <- ytrain[complete.cases(xtrain)]
+
+xtrain <- xtrain[complete.cases(xtrain),]
+
+xnhtest <- xnh[index:nrow(xnh),]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+ytest <- as.numeric(grepl("Snow", xnhtest$events))
+
+T <- 50
+N <- 6000
+w <- rep(1, length(ytrain))/length(ytrain)
+ypred <- c()
+sum_error <- 0
+for (i in 1:T) {
+  if (sum_error > 0.5) break
+  index <- sample(1:length(ytrain), N, replace = TRUE, prob = w)
+  xtrain1 <- xtrain[index,]
+  ytrain1 <- ytrain[index]
+  lm1 <- glm(ytrain1 ~ avg_tmp+ avg_dew + avg_sea, 
+             data = xtrain1, family=binomial(link="probit"))
+  pred <- predict(lm1, xtrain, type = "response")
+  ypred_snow <- as.numeric(pred >= 0.5)
+  error <- 1-as.numeric(ypred_snow == ytrain)
+  sum_error <- sum(error * w)
+  confidence_index <- log((1-sum_error)/sum_error)/2
+  w <- w * exp(confidence_index * error)
+  w <- w / sum(w)
+  
+  # predictiin for i
+  pred <- predict(lm1, xtest, type = "response")
+  ypred_snow <- as.numeric(pred >= 0.5)
+  ypred <- c(ypred, ypred_snow)
+  print(length(ypred))
+  
+}
+
+ypred <- matrix(ypred, nrow = i-1, byrow = T)
+
+ypred_snow <- apply(ypred, 2, select)
+
+(TP <- sum(ytest == 1 & ypred_snow == 1)) # 18
+(TN <- sum(ytest == 0 & ypred_snow == 0)) # 241
+(FP <- sum(ytest == 1 & ypred_snow == 0)) # 12
+(FN <- sum(ytest == 0 & ypred_snow == 1)) # 33
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.8519737
+(sen <- TP/(TP+FN)) # 0.3529412
+(spec <- TN/(TN+FP)) # 0.9525692
+(pre <- TP/(TP+FP)) # 0.6
+
+
+# logistic model for "Thunderstorm".
+########################## naive method ##################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+
+ytrain <- as.numeric(grepl("Thunderstorm", xnhtrain$events))
+ytest <- as.numeric(grepl("Thunderstorm", xnhtest$events))
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_thun <- as.numeric(pred >= 0.5)
+sum(ypred_thun == ytest)/length(ytest) # 0.9013158
+TP <- sum(ytest == 1 & ypred_thun == 1) # 0
+TN <- sum(ytest == 0 & ypred_thun == 0) # 289
+FP <- sum(ytest == 1 & ypred_thun == 0) # 15
+FN <- sum(ytest == 0 & ypred_thun == 1) # 0
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.9506579
+(sen <- TP/(TP+FN)) # NAN
+(spec <- TN/(TN+FP)) # 0.9506579
+(pre <- TP/(TP+FP)) # 0
+
+########################## Oversampling ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Thunderstorm", xnhtrain$events))
+ytest <- as.numeric(grepl("Thunderstorm", xnhtest$events))
+
+number <- which(ytrain == 1)
+set.seed(1)
+index <- sample(number, 9302, replace = TRUE)
+index <- c(index, which(ytrain == 0))
+xtrain <- xtrain[index,]
+ytrain <- ytrain[index]
+
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_thun <- as.numeric(pred >= 0.5)
+
+TP <- sum(ytest == 1 & ypred_thun == 1) # 15
+TN <- sum(ytest == 0 & ypred_thun == 0) # 162
+FP <- sum(ytest == 1 & ypred_thun == 0) # 0
+FN <- sum(ytest == 0 & ypred_thun == 1) # 127
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.5822368
+(sen <- TP/(TP+FN)) # 0.1056338
+(spec <- TN/(TN+FP)) # 1
+(pre <- TP/(TP+FP)) # 1
+
+
+########################## Undersampling ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Thunderstorm", xnhtrain$events))
+ytest <- as.numeric(grepl("Thunderstorm", xnhtest$events))
+
+number <- which(ytrain == 0)
+set.seed(1)
+index <- sample(number, 474, replace = TRUE)
+index <- c(index, which(ytrain == 1))
+xtrain <- xtrain[index,]
+ytrain <- ytrain[index]
+
+lm1 <- glm(ytrain ~ avg_tmp+ avg_dew +avg_sea, 
+           data = xtrain, family=binomial(link="probit"))
+pred <- predict(lm1, xtest, type = "response")
+ypred_thun <- as.numeric(pred >= 0.5)
+
+(TP <- sum(ytest == 1 & ypred_thun== 1)) # 15
+(TN <- sum(ytest == 0 & ypred_thun == 0)) # 156
+(FP <- sum(ytest == 1 & ypred_thun == 0)) # 0
+(FN <- sum(ytest == 0 & ypred_thun == 1)) # 133
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.5625
+(sen <- TP/(TP+FN)) # 0.1013514
+(spec <- TN/(TN+FP)) # 1
+(pre <- TP/(TP+FP)) # 1
+
+
+########################## Bagging ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+ytrain <- as.numeric(grepl("Thunderstorm", xnhtrain$events))
+ytest <- as.numeric(grepl("Thunderstorm", xnhtest$events))
+
+T <- 10
+N <- 6000
+ypred <- c()
+for (i in 1:T) {
+  index <- sample(1:length(ytrain), N, replace = TRUE)
+  xtrain <- xtrain[index,]
+  ytrain <- ytrain[index]
+  lm1 <- glm(ytrain ~ avg_tmp+ avg_dew + avg_sea, 
+             data = xtrain, family=binomial(link="probit"))
+  pred <- predict(lm1, xtest, type = "response")
+  ypred_thun <- as.numeric(pred >= 0.5)
+  ypred <- c(ypred, ypred_thun)
+}
+ypred <- matrix(ypred, nrow = 10, byrow = T)
+
+select <- function(x) {
+  num1 <- sum(x == 0)
+  num2 <- sum(x == 1)
+  if (num1 >= num2) return(0)
+  else return(1)
+}
+
+ypred_thun <- apply(ypred, 2, select)
+
+(TP <- sum(ytest == 1 & ypred_thun== 1)) # 0
+(TN <- sum(ytest == 0 & ypred_thun == 0)) # 289
+(FP <- sum(ytest == 1 & ypred_thun == 0)) # 15
+(FN <- sum(ytest == 0 & ypred_thun == 1)) # 0
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.9506579
+(sen <- TP/(TP+FN)) # NAN
+(spec <- TN/(TN+FP)) # 0.9506579
+(pre <- TP/(TP+FP)) # 0
+
+
+########################## Adaptive Boosting ################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+xnhtrain <- xnh[2:(index-1),]
+ytrain <- as.numeric(grepl("Thunderstorm", xnhtrain$events))
+ytrain <- ytrain[complete.cases(xtrain)]
+
+xtrain <- xtrain[complete.cases(xtrain),]
+
+xnhtest <- xnh[index:nrow(xnh),]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+
+ytest <- as.numeric(grepl("Thunderstorm", xnhtest$events))
+
+T <- 50
+N <- 6000
+w <- rep(1, length(ytrain))/length(ytrain)
+ypred <- c()
+sum_error <- 0
+for (i in 1:T) {
+  if (sum_error > 0.5) break
+  index <- sample(1:length(ytrain), N, replace = TRUE, prob = w)
+  xtrain1 <- xtrain[index,]
+  ytrain1 <- ytrain[index]
+  lm1 <- glm(ytrain1 ~ avg_tmp+ avg_dew + avg_sea, 
+             data = xtrain1, family=binomial(link="probit"))
+  pred <- predict(lm1, xtrain, type = "response")
+  ypred_thun <- as.numeric(pred >= 0.5)
+  error <- 1-as.numeric(ypred_thun == ytrain)
+  sum_error <- sum(error * w)
+  confidence_index <- log((1-sum_error)/sum_error)/2
+  w <- w * exp(confidence_index * error)
+  w <- w / sum(w)
+  
+  # predictiin for i
+  pred <- predict(lm1, xtest, type = "response")
+  ypred_thun <- as.numeric(pred >= 0.5)
+  ypred <- c(ypred, ypred_thun)
+  print(length(ypred))
+  
+}
+
+ypred <- matrix(ypred, nrow = i-1, byrow = T)
+
+ypred_thun <- apply(ypred, 2, select)
+
+(TP <- sum(ytest == 1 & ypred_thun == 1)) # 11
+(TN <- sum(ytest == 0 & ypred_thun == 0)) # 245
+(FP <- sum(ytest == 1 & ypred_thun == 0)) # 4
+(FN <- sum(ytest == 0 & ypred_thun == 1)) # 44
+
+(acc <- (TP+TN)/(TP+FP+TN+FN)) # 0.8421053
+(sen <- TP/(TP+FN)) # 0.2
+(spec <- TN/(TN+FP)) # 0.9839357
+(pre <- TP/(TP+FP)) # 0.7333333
+
+
+
+
+
+# logistic model for "Tornado".
+########################## naive method ##################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+
+ytrain <- as.numeric(grepl("Tornado", xnhtrain$events))
+ytest <- as.numeric(grepl("Tornado", xnhtest$events))
+
+
+# logistic model for "Hail".
+########################## naive method ##################
+index <- which(xnh$date == "2015/1/1")  # 731
+xtrain <- x[1:(index-2),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xtest <- x[(index-1):(nrow(x)-1),c("avg_tmp", "avg_dew", "avg_hum", "avg_sea", "avg_wind")]
+xnhtrain <- xnh[2:(index-1),]
+xnhtest <- xnh[index:nrow(xnh),]
+
+ytrain <- as.numeric(grepl("Hail", xnhtrain$events))
+ytest <- as.numeric(grepl("Hail", xnhtest$events))
+
+
+# Look at the overall performance.
+# Good weather
+overall <- (!ypred_rain) * (!ypred_snow) * (!ypred_thun) * (!ypred_fog)
+ytest <- as.numeric(xnhtest$events == "good")
+sum(overall == ytest)/length(ytest) # 0.6546053
+
+# Other combinations
+fog <- grepl("Fog", xnhtest$events)
+snow <- grepl("Snow",xnhtest$events)
+rain <- grepl("Rain", xnhtest$events)
+thun <- grepl("Thunderstorm", xnhtest$events)
+
+# only fog
+overall <- (!ypred_rain) * (!ypred_snow) * (!ypred_thun) * (ypred_fog)
+ytest <- fog * (!snow) * (!rain) * (!thun)
+sum(overall == ytest)/length(ytest) # 0.9506579
+
+# fog, rain
+overall <- (ypred_rain) * (!ypred_snow) * (!ypred_thun) * (ypred_fog)
+ytest <- fog * (!snow) * rain * (!thun)
+sum(overall == ytest)/length(ytest) # 0.9506579
+
+# fog, rain, snow
+overall <- (ypred_rain) * (ypred_snow) * (!ypred_thun) * (ypred_fog)
+ytest <- fog * snow * rain * (!thun)
+sum(overall == ytest)/length(ytest)
+
+# fog, rain, thunderstorm
+overall <- (ypred_rain) * (!ypred_snow) * (ypred_thun) * (ypred_fog)
+ytest <- fog * (!snow) * rain * (thun)
+sum(overall == ytest)/length(ytest)
+
+# fog, snow
+overall <- (!ypred_rain) * (ypred_snow) * (!ypred_thun) * (ypred_fog)
+ytest <- fog * (snow) * (!rain) * (!thun)
+sum(overall == ytest)/length(ytest)
+
+# fog, thunderstorm
+overall <- (!ypred_rain) * (!ypred_snow) * (ypred_thun) * (ypred_fog)
+ytest <- fog * (!snow) * (!rain) * (thun)
+sum(overall == ytest)/length(ytest)
+
+# rain
+overall <- (ypred_rain) * (!ypred_snow) * (!ypred_thun) * (!ypred_fog)
+ytest <- (!fog) * (!snow) * (rain) * (!thun)
+sum(overall == ytest)/length(ytest)
+
+# rain, snow
+overall <- (ypred_rain) * (ypred_snow) * (!ypred_thun) * (!ypred_fog)
+ytest <- (!fog) * (snow) * (rain) * (!thun)
+sum(overall == ytest)/length(ytest)
+
+# rain, snow, thunderstorm
+overall <- (ypred_rain) * (ypred_snow) * (ypred_thun) * (!ypred_fog)
+ytest <- (!fog) * (snow) * (rain) * (thun)
+sum(overall == ytest)/length(ytest)
+
+# rain, thunderstorm
+overall <- (ypred_rain) * (!ypred_snow) * (ypred_thun) * (!ypred_fog)
+ytest <- (!fog) * (!snow) * (rain) * (thun)
+sum(overall == ytest)/length(ytest)
+
+# snow
+overall <- (!ypred_rain) * (ypred_snow) * (!ypred_thun) * (!ypred_fog)
+ytest <- (!fog) * (snow) * (!rain) * (!thun)
+sum(overall == ytest)/length(ytest)
+
+# thunderstorm
+overall <- (!ypred_rain) * (!ypred_snow) * (ypred_thun) * (!ypred_fog)
+ytest <- (!fog) * (!snow) * (!rain) * (thun)
+sum(overall == ytest)/length(ytest)
